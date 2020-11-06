@@ -1,4 +1,7 @@
 # Android Cas
 ## Fist version
 Use Android App Login
-Stage Project
+### Library Project
+Adding Zxing Library
+
+
