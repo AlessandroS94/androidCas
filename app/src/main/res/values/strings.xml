@@ -3,4 +3,8 @@
     <string name="scansiona_qr">Scansiona QR</string>
     <string name="logo">logo</string>
     <string name="login">login</string>
+    <string name="username">Username</string>
+    <string name="todo">TODO</string>
+    <string name="password">Password</string>
+    <string name="websocket">WebSocket</string>
 </resources>

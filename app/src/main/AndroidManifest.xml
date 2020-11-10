@@ -5,6 +5,8 @@
 
     <uses-sdk tools:overrideLibrary="com.google.zxing.client.android" />
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:hardwareAccelerated="true"
@@ -13,7 +15,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.CasAndroid">
-        <activity android:name=".LoginActivity"></activity>
+        <activity android:name=".MainSocket" />
         <activity
             android:name=".MainActivity"
             android:screenOrientation="portrait">

@@ -1,20 +1,27 @@
 package org.apereo.cas.casAndroid;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
+import java.net.URISyntaxException;
+
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
+    //WebSocket
+    //private WebSocketClient mWebSocketClient;
+
+    //Button
     private Button buttonScan;
+    private Button buttonLogin;
+    private Button buttonWebSocket;
 
     //qr code scanner object
     private IntentIntegrator qrScan;
@@ -27,12 +34,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         //View objects
         buttonScan = (Button) findViewById(R.id.qrbutton);
+        buttonLogin = (Button) findViewById(R.id.loginbutton);
+        buttonWebSocket = (Button) findViewById(R.id.websocket);
 
         //intializing scan object
         qrScan = new IntentIntegrator(this);
 
         //attaching onclick listener
         buttonScan.setOnClickListener(this);
+        buttonLogin.setOnClickListener(this);
+        buttonWebSocket.setOnClickListener(this);
     }
 
     @Override
@@ -61,9 +72,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 qrScan.initiateScan();
                 break;
             case R.id.loginbutton:
-                Intent loginIntent = new Intent(MainActivity.this, LoginActivity.class);
-                startActivity(loginIntent);
+                Toast.makeText(this, "Login", Toast.LENGTH_LONG).show();
+                break;
+            case  R.id.websocket:
+                Intent Websocket = new Intent(this, MainSocket.class);
+                startActivity(Websocket);
+                break;
         }
     }
-
 }
