@@ -7,6 +7,7 @@ import android.widget.Button;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
@@ -19,7 +20,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //private WebSocketClient mWebSocketClient;
 
     //Button
-    private Button buttonScan;
+    private FloatingActionButton buttonScan;
     private Button buttonLogin;
     private Button buttonWebSocket;
 
@@ -33,17 +34,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 
         //View objects
-        buttonScan = (Button) findViewById(R.id.qrbutton);
+        buttonScan = (FloatingActionButton) findViewById(R.id.qrbutton);
         buttonLogin = (Button) findViewById(R.id.loginbutton);
-        buttonWebSocket = (Button) findViewById(R.id.websocket);
+        //buttonWebSocket = (Button) findViewById(R.id.websocket);
 
         //intializing scan object
         qrScan = new IntentIntegrator(this);
 
         //attaching onclick listener
-        buttonScan.setOnClickListener(this);
-        buttonLogin.setOnClickListener(this);
-        buttonWebSocket.setOnClickListener(this);
+       buttonScan.setOnClickListener(this);
+       buttonLogin.setOnClickListener(this);
+//        buttonWebSocket.setOnClickListener(this);
     }
 
     @Override
@@ -74,10 +75,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.loginbutton:
                 Toast.makeText(this, "Login", Toast.LENGTH_LONG).show();
                 break;
-            case  R.id.websocket:
-                Intent Websocket = new Intent(this, MainSocket.class);
-                startActivity(Websocket);
-                break;
+            //case  R.id.websocket:
+                //Intent Websocket = new Intent(this, MainSocket.class);
+                //startActivity(Websocket);
+               // break;
         }
     }
 }
