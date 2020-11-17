@@ -1,17 +1,32 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            url "https://maven.google.com"
+        }
+        google()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:4.1.0'
+    }
+}
+
+
 plugins {
     id 'com.android.application'
 }
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion "30.0.2"
+    compileSdkVersion 29
+    buildToolsVersion "29.0.2"
 
     defaultConfig {
         applicationId "org.apereo.cas.casAndroid"
-        minSdkVersion 25
-        targetSdkVersion 30
+        minSdkVersion 17
+        targetSdkVersion 29
         versionCode 1
         versionName "1.0"
+        multiDexEnabled true
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -27,8 +42,6 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 }
-
-
 repositories {
     jcenter()
     maven { url "https://jitpack.io" }
@@ -37,18 +50,41 @@ repositories {
 
 dependencies {
 
-    implementation 'com.journeyapps:zxing-android-embedded:4.1.0'
-    implementation("com.squareup.okhttp3:okhttp:4.9.0")
-    implementation('com.squareup.retrofit2:retrofit:2.9.0')
-    implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'com.google.android.gms:play-services-vision:20.1.2'
+
     implementation 'androidx.appcompat:appcompat:1.2.0'
+    //QR code
+    implementation 'com.journeyapps:zxing-android-embedded:4.1.0'
+
+    // RxJava
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.12'
+    implementation 'io.reactivex.rxjava2:rxandroid:2.1.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.9.0'
+    implementation('com.squareup.retrofit2:retrofit:2.9.0')
+    implementation('com.squareup.picasso:picasso:2.5.2')
+
+    //websocket (STOMP)
+    implementation 'com.squareup.okhttp3:okhttp:4.9.0'
+    implementation 'com.github.NaikSoftware:StompProtocolAndroid:1.6.6'
+
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'androidx.multidex:multidex:2.0.1'
+
+    implementation 'com.google.android.gms:play-services-vision:20.1.2'
+
     implementation 'com.google.android.material:material:1.2.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
-    testImplementation 'junit:junit:4.13.1'
+    implementation 'androidx.annotation:annotation:1.1.0'
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0'
+
+
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    testImplementation 'junit:junit:4.13.1'
 
-    //Stomp
-    implementation 'com.github.NaikSoftware:StompProtocolAndroid:1.1'
+
+    implementation 'com.android.support:support-annotations:28.0.0'
+
+
 }

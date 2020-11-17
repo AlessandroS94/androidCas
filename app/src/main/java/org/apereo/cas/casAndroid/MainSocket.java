@@ -1,15 +1,27 @@
+
 package org.apereo.cas.casAndroid;
 
-import androidx.appcompat.app.AppCompatActivity;
+
 
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
+import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.RecyclerView;
+
+
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import java.security.cert.CertificateException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -18,86 +30,126 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import io.reactivex.CompletableTransformer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.WebSocket;
-import okhttp3.WebSocketListener;
-import okio.ByteString;
+
+import ua.naiksoftware.stomp.Stomp;
+import ua.naiksoftware.stomp.StompClient;
+import ua.naiksoftware.stomp.dto.StompHeader;
+
 
 public class MainSocket extends AppCompatActivity {
 
-    private Button start;
-    private TextView output;
-    private OkHttpClient client;
-    private Toast toast;
 
-    private final class webSocketListener extends WebSocketListener {
-        private static final int NORMAL_CLOSURE_STATUS = 1000;
+    private static final String TAG = "MainSocket";
 
-        @Override
-        public void onOpen(WebSocket webSocket, Response response) {
-            output("Receiving bytes : " + response);
-            webSocket.send("/qrtopic/c51e54f4-5d55-4cd0-aec6-8f76c2a8f49d/verify/websocket");
-            output("Receiving bytes : " + response);
-        }
+    private SimpleAdapter mAdapter;
+    private List<String> mDataSet = new ArrayList<>();
+    private StompClient mStompClient;
+    private Disposable mRestPingDisposable;
+    private final SimpleDateFormat mTimeFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+    private RecyclerView mRecyclerView;
+    private Gson mGson = new GsonBuilder().create();
+    private String address;
+    private CompositeDisposable compositeDisposable;
 
-        @Override
-        public void onMessage(WebSocket webSocket, String text) {
-
-            output("Receiving : " + text);
-        }
-
-        @Override
-        public void onMessage(WebSocket webSocket, ByteString bytes) {
-            output("Receiving bytes : " + bytes.hex());
-        }
-
-        @Override
-        public void onClosing(WebSocket webSocket, int code, String reason) {
-            webSocket.close(NORMAL_CLOSURE_STATUS, null);
-            output("Closing : " + code + " / " + reason);
-        }
-
-        @Override
-        public void onFailure(WebSocket webSocket, Throwable t, Response response) {
-            output("Error : " + t.getMessage());
-            Log.i("WEB SOCKET", "" + response);
-        }
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.active_main_socket);
-        start = (Button) findViewById(R.id.start);
-        output = (TextView) findViewById(R.id.output);
-        client = this.getUnsafeOkHttpClient();
 
-        start.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                start();
-            }
-        });
-
+        address = "wss://10.0.2.2:8443/cas/qr-websocket/websocket";
+        mStompClient = Stomp.over(Stomp.ConnectionProvider.OKHTTP, address, null, getUnsafeOkHttpClient());
+        resetSubscriptions();
     }
 
-    private void start() {
-        Request request = new Request.Builder().url("wss://10.0.2.2:8443/cas/qr-websocket/websocket").build();
-        webSocketListener listener = new webSocketListener();
-        client.newWebSocket(request, listener);
-
-        //client.dispatcher().executorService().shutdown();
+    public void disconnectStomp(View view) {
+        mStompClient.disconnect();
     }
 
-    private void output(final String txt) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                output.setText(output.getText().toString() + "\n\n" + txt);
-            }
-        });
+    public static final String QR_AUTHENTICATION_CHANNEL_ID = "QR_AUTHENTICATION_CHANNEL_ID";
+
+    public static final String payload = "payload";
+
+    public void connectStomp(View view) {
+
+        mStompClient.withClientHeartbeat(1000).withServerHeartbeat(1000);
+
+        resetSubscriptions();
+
+        Disposable dispLifecycle = mStompClient.lifecycle()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(lifecycleEvent -> {
+                    switch (lifecycleEvent.getType()) {
+                        case OPENED:
+                            toast("Stomp connection opened");
+                            break;
+                        case ERROR:
+                            Log.e(TAG, "Stomp connection error", lifecycleEvent.getException());
+                            toast("Stomp connection error");
+                            break;
+                        case CLOSED:
+                            toast("Stomp connection closed");
+                            resetSubscriptions();
+                            break;
+                        case FAILED_SERVER_HEARTBEAT:
+                            toast("Stomp failed server heartbeat");
+                            break;
+                    }
+                });
+
+        compositeDisposable.add(dispLifecycle);
+
+        List<StompHeader> headers = new ArrayList<>();
+        headers.add(new StompHeader(QR_AUTHENTICATION_CHANNEL_ID, "a7c475f3-92ef-43ec-8534-3992ba3a5f41"));
+        headers.add(new StompHeader(payload, "payload"));
+        // Receive greetings
+        Disposable dispTopic = mStompClient.topic("/qr/accept",headers)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(topicMessage -> {
+                    Log.d(TAG, "Received " + topicMessage.getPayload());
+                }, throwable -> {
+                    Log.e(TAG, "Error on subscribe topic", throwable);
+                });
+
+        compositeDisposable.add(dispTopic);
+
+        mStompClient.connect();
+    }
+
+    private void toast(String text) {
+        Log.i(TAG, text);
+        Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
+    }
+
+    protected CompletableTransformer applySchedulers() {
+        return upstream -> upstream
+                .unsubscribeOn(Schedulers.newThread())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+    }
+
+    private void resetSubscriptions() {
+        if (compositeDisposable != null) {
+            compositeDisposable.dispose();
+        }
+        compositeDisposable = new CompositeDisposable();
+    }
+
+    @Override
+    protected void onDestroy() {
+        mStompClient.disconnect();
+
+        if (mRestPingDisposable != null) mRestPingDisposable.dispose();
+        if (compositeDisposable != null) compositeDisposable.dispose();
+        super.onDestroy();
     }
 
     //SSL IGNORE certificate
