@@ -1,6 +1,6 @@
 package org.apereo.cas.casAndroid.util;
 
-import android.util.Log;
+
 import android.widget.SimpleAdapter;
 
 import com.google.gson.Gson;
@@ -11,18 +11,17 @@ import org.json.JSONStringer;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
+
 import okhttp3.OkHttpClient;
 import ua.naiksoftware.stomp.Stomp;
 import ua.naiksoftware.stomp.StompClient;
+import ua.naiksoftware.stomp.dto.StompCommand;
 import ua.naiksoftware.stomp.dto.StompHeader;
+import ua.naiksoftware.stomp.dto.StompMessage;
 
 public class WebSocket {
 
@@ -57,11 +56,9 @@ public class WebSocket {
         JSONStringer jsonWebToken = new JSONStringer().object().key("token").value(jwt).endObject();
         List<StompHeader> headers = new ArrayList<>();
         headers.add(new StompHeader(QR_AUTHENTICATION_CHANNEL_ID, channel));
-        mStompClient.connect(headers);
-        mStompClient.send("/qr/accept", jsonWebToken.toString()).subscribe();
-        mStompClient.topic("/qr/accept").subscribe(topicMessage -> {
-            Log.d(TAG, topicMessage.getPayload());
-        });
-        mStompClient.disconnect();
+        headers.add(new StompHeader(StompHeader.DESTINATION, "/qr/accept"));
+        mStompClient.connect();
+        StompMessage stompMessage = new StompMessage(StompCommand.SEND, headers, jsonWebToken.toString());
+        mStompClient.send(stompMessage).subscribe();
     }
 }

@@ -5,9 +5,7 @@
     <string name="login">login</string>
     <string name="username">Username</string>
     <string name="websocket">WebSocket</string>
-    <string name="email">Email</string>
     <string name="password">Password</string>
-    <string name="todo">TODO</string>
     <string name="title_activity_login">LoginActivity</string>
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>
@@ -18,4 +16,12 @@
     <string name="invalid_password">Password must be >5 characters</string>
     <string name="login_failed">"Login failed"</string>
     <string name="logout">Logout</string>
+    <string name="todo">TODO</string>
+    <string name="QR_Code_Channel_Not_Found">QR Code Channel Not Found</string>
+    <string name="Password_is_required">Password is required!</string>
+    <string name="Insert_id_user">Insert user ID!</string>
+    <string name="User_id_or_password_is_not_right">User id or password is not right!</string>
+    <string name="Server_not_respond">Server not respond!</string>
+    <string name="Somethings_went_wrong">Somethings went wrong!</string>
+    <string name="user_id">User id</string>
 </resources>

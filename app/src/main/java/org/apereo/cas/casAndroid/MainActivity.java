@@ -14,14 +14,14 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.io.IOException;
-
 import java.security.cert.CertificateException;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
+import org.apereo.cas.casAndroid.model.User;
+import org.apereo.cas.casAndroid.util.LoginRest;
 import org.apereo.cas.casAndroid.util.WebSocket;
 import org.json.JSONException;
 
@@ -32,12 +32,9 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
+import static org.apereo.cas.casAndroid.R.string.QR_Code_Channel_Not_Found;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -45,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private FloatingActionButton buttonScan;
     private Button buttonLogin;
     private Button buttonLogout;
-    private EditText email;
+    private EditText user_id;
     private EditText password;
 
     //qr code scanner object
@@ -68,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         buttonScan = (FloatingActionButton) findViewById(R.id.scanQR);
         buttonLogin = (Button) findViewById(R.id.loginbutton);
         buttonLogout = (Button) findViewById(R.id.logout);
-        email = (EditText) findViewById(R.id.etemail);
+        user_id = (EditText) findViewById(R.id.userid);
         password = (EditText) findViewById(R.id.mypass);
 
         //intializing scan object
@@ -83,7 +80,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-
     //QR CODE READER
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -92,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             //if qrcode has nothing in it
             if (result.getContents() == null) {
-                Toast.makeText(this, "QR Code Channel Not Found", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, QR_Code_Channel_Not_Found, Toast.LENGTH_LONG).show();
             } else {
                 //if qr contains data send message to WebSocket
                 Toast.makeText(this, result.getContents(), Toast.LENGTH_LONG).show();
@@ -100,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 SharedPreferences sharedpreferences = getSharedPreferences(MainActivity.MyPREFERENCES, Context.MODE_PRIVATE);
                 String value = sharedpreferences.getString(String.valueOf(User.JWT), null);
                 try {
-                    channelAuth.send(value,result.getContents());
+                    channelAuth.send(value, result.getContents());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -117,18 +113,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return TextUtils.isEmpty(str);
     }
 
-    void checkDataEntered() {
+    public boolean checkDataEntered() {
+
+        if (isEmpty(user_id)) {
+            Toast t = Toast.makeText(this, R.string.Insert_id_user, Toast.LENGTH_LONG);
+            t.show();
+            return false;
+        }
 
         if (isEmpty(password)) {
-            Toast t = Toast.makeText(this, "Password is required!", Toast.LENGTH_SHORT);
+            Toast t = Toast.makeText(this, R.string.Password_is_required, Toast.LENGTH_LONG);
             t.show();
+            return false;
         }
 
-        if (isEmpty(email)) {
-            Toast t = Toast.makeText(this, "Insert a valid email!", Toast.LENGTH_SHORT);
-            t.show();
-        }
-
+        return true;
     }
 
     //Click listener
@@ -139,42 +138,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.scanQR:
                 qrScan.initiateScan();
                 break;
-            case R.id.loginbutton:
 
-                this.checkDataEntered();
-                String mEmail = email.getText().toString();
-                String mPassword = password.getText().toString();
-                OkHttpClient client = getUnsafeOkHttpClient();
-                MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
-                RequestBody body = RequestBody.create(mediaType, "token=true&username=" + mEmail + "&password=" + mPassword);
-                Request request = new Request.Builder()
-                        .url("https://10.0.2.2:8443/cas/v1/tickets?token=true&username=" + mEmail + "&password=" + mPassword)
-                        .method("POST", body)
-                        .addHeader("Content-Type", "application/x-www-form-urlencoded")
-                        .build();
-                try {
-                    Response response = client.newCall(request).execute();
-                    if (response.code() == 201)
-                    {
-                        SharedPreferences.Editor editor = sharedpreferences.edit();
-                        editor.putString(String.valueOf(User.JWT), response.body().string());
-                        editor.commit();
-                        updateUI();
+            case R.id.loginbutton:
+                if (this.checkDataEntered()) {
+                    String mUser_id = user_id.getText().toString();
+                    String mPassword = password.getText().toString();
+                    OkHttpClient client = getUnsafeOkHttpClient();
+                    LoginRest loginRest = new LoginRest(mUser_id, mPassword, client);
+                    String result = loginRest.login();
+                    switch (result) {
+                        case "credential_not_correct":
+                            Toast credential = Toast.makeText(this, R.string.User_id_or_password_is_not_right, Toast.LENGTH_LONG);
+                            credential.show();
+                            break;
+                        case "server_not_found":
+                            Toast serverNotFound = Toast.makeText(this, R.string.Server_not_respond, Toast.LENGTH_LONG);
+                            serverNotFound.show();
+                            break;
+                        case "something_went_wrong":
+                            Toast something_went_wrong = Toast.makeText(this, R.string.Somethings_went_wrong, Toast.LENGTH_LONG);
+                            something_went_wrong.show();
+                            break;
+                        default:
+                            SharedPreferences.Editor editor = sharedpreferences.edit();
+                            editor.putString(String.valueOf(User.JWT), result);
+                            editor.commit();
+                            updateUI();
                     }
-                    else{
-                        Toast t = Toast.makeText(this, "Email or password is not right!", Toast.LENGTH_SHORT);
-                        t.show();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
                 break;
-
             case R.id.logout:
                 logout();
                 updateUI();
                 break;
-
         }
     }
 
@@ -183,13 +179,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         SharedPreferences sharedpreferences = getSharedPreferences(MainActivity.MyPREFERENCES, Context.MODE_PRIVATE);
         String value = sharedpreferences.getString(String.valueOf(User.JWT), null);
         if (value != null) {
-            email.setVisibility(View.GONE);
+            user_id.setVisibility(View.GONE);
             password.setVisibility(View.GONE);
             buttonLogin.setVisibility(View.GONE);
             buttonLogout.setVisibility(View.VISIBLE);
             buttonScan.setVisibility(View.VISIBLE);
         } else {
-            email.setVisibility(View.VISIBLE);
+            user_id.setVisibility(View.VISIBLE);
             password.setVisibility(View.VISIBLE);
             buttonLogin.setVisibility(View.VISIBLE);
             buttonLogout.setVisibility(View.GONE);
@@ -197,6 +193,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    //remove the session in the App
     public void logout() {
         SharedPreferences sharedpreferences = getSharedPreferences(MainActivity.MyPREFERENCES, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedpreferences.edit();
