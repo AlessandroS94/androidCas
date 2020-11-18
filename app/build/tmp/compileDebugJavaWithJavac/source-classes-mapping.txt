@@ -1,0 +1,12 @@
+org/apereo/cas/casAndroid/model/User.java
+ org.apereo.cas.casAndroid.model.User
+org/apereo/cas/casAndroid/util/WebSocket.java
+ org.apereo.cas.casAndroid.util.WebSocket
+org/apereo/cas/casAndroid/BuildConfig.java
+ org.apereo.cas.casAndroid.BuildConfig
+org/apereo/cas/casAndroid/MainActivity.java
+ org.apereo.cas.casAndroid.MainActivity
+ org.apereo.cas.casAndroid.MainActivity$1
+ org.apereo.cas.casAndroid.MainActivity$2
+org/apereo/cas/casAndroid/util/LoginRest.java
+ org.apereo.cas.casAndroid.util.LoginRest

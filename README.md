@@ -1,7 +1,8 @@
 # Android Cas
-## Fist version
-Use Android App Login
+## 1° version
+Use Android App QRLogin
 ### Library Project
 Adding Zxing Library
+StompProtocolAndroid
 
 
