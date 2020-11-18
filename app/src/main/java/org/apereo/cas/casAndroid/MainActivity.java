@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.text.TextUtils;
 
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -17,12 +16,14 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.IOException;
 
-import java.net.ConnectException;
 import java.security.cert.CertificateException;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
+
+import org.apereo.cas.casAndroid.util.WebSocket;
+import org.json.JSONException;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -93,8 +94,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (result.getContents() == null) {
                 Toast.makeText(this, "QR Code Channel Not Found", Toast.LENGTH_LONG).show();
             } else {
-                //if qr contains data
+                //if qr contains data send message to WebSocket
                 Toast.makeText(this, result.getContents(), Toast.LENGTH_LONG).show();
+                WebSocket channelAuth = new WebSocket(getUnsafeOkHttpClient());
+                SharedPreferences sharedpreferences = getSharedPreferences(MainActivity.MyPREFERENCES, Context.MODE_PRIVATE);
+                String value = sharedpreferences.getString(String.valueOf(User.JWT), null);
+                try {
+                    channelAuth.send(value,result.getContents());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data);

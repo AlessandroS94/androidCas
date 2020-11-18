@@ -87,7 +87,7 @@
             android:rotation="0"
             android:scaleX="3"
             android:scaleY="3"
-            app:backgroundTint="#4E00EA"
+            app:backgroundTint="@color/colorPrimary"
             app:fabCustomSize="50dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
