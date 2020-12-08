@@ -10,8 +10,8 @@ HttpClient (Rest)
 
 ## Images
 Login
-![Algorithm schema](./screen1.png)
+![Screen1](./screen1.png)
 QR Scan
-![Algorithm schema](./screen2.png)
+![Screen2](./screen2.png)
 Add Exercise
 
