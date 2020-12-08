@@ -8,4 +8,10 @@ HttpClient (Rest)
 
 
 
+## Images
+Login
+![Algorithm schema](./screen1.png)
+QR Scan
+![Algorithm schema](./screen2.png)
+Add Exercise
 
