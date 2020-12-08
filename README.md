@@ -2,7 +2,10 @@
 ## 1° version
 Use Android App QRLogin
 ### Library Project
-Adding Zxing Library
-StompProtocolAndroid
+Adding Zxing Library (Qr Code)
+StompProtocolAndroid (Socket)
+HttpClient (Rest)
+
+
 
 
