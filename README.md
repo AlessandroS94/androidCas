@@ -9,9 +9,7 @@ HttpClient (Rest)
 
 
 ## Images
-Login
-![Screen1](./screen1.jpg)
-QR Scan
-![Screen2](./screen2.jpg)
-Add Exercise
 
+![Screen1](./screen1.jpg)
+
+![Screen2](./screen2.jpg)
